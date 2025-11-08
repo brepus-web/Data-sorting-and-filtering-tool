@@ -28,13 +28,12 @@ else:
 
 #Downloading files in CSV
 csv_out = final_df.to_csv(index=False)
-st.download_button("Download results(CSV)", data=csv_out, file_name="Risk_Results.csv", mime="text/csv")
+st.download_button("Download results(CSV)", data=csv_out, file_name="Sorted_File.csv", mime="text/csv")
 
 #Downloading results in XLSX
 excel_buffer = io.BytesIO()
 final_df.to_excel(excel_buffer,index=False, engine="openpyxl")
 excel_buffer.seek(0)
-
-st.download_button("Download results(XLSX)", data = excel_buffer, file_name= "Risk_Results.xlsx", mime= "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+st.download_button("Download results(XLSX)", data = excel_buffer, file_name= "Sorted_File.xlsx", mime= "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
