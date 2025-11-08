@@ -23,3 +23,18 @@ if uploaded_file is not None:
         df = None
 
     col_options = list(df.columns)
+else:
+    print("Upload a file!")
+
+#Downloading files in CSV
+csv_out = final_df.to_csv(index=False)
+st.download_button("Download results(CSV)", data=csv_out, file_name="Risk_Results.csv", mime="text/csv")
+
+#Downloading results in XLSX
+excel_buffer = io.BytesIO()
+final_df.to_excel(excel_buffer,index=False, engine="openpyxl")
+excel_buffer.seek(0)
+
+st.download_button("Download results(XLSX)", data = excel_buffer, file_name= "Risk_Results.xlsx", mime= "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+
