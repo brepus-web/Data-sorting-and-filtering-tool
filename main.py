@@ -40,24 +40,46 @@ if uploaded_file is not None:
     sort_direction = st.radio("Sort Direction",["Ascending", "Descending"])
     ascending = sort_direction == "Ascending"
     sort_type = st.radio("Sort As",["Alphanumeric", "Text", "Number"])
-    if sort_type == "Alphanumeric":
-        sorted_df = df.sort_values(by=sort_col, ascending=ascending, key=Alphanumeric_key)
-    elif sort_type == "Text":
-        sorted_df = df.sort_values(by=sort_col, ascending=ascending, key=lambda x:x.astype(str).str.lower())
-    elif sort_type == "Number":
-       sorted_df = df.sort_values(by=sort_col, ascending=ascending, key=lambda x:pd.to_numeric(x,errors="coerce"))
-        
-    #Displaying Results
-    st.subheader("Sorted Data")
-    st.dataframe(sorted_df)
+    proceed_sort = True
+    if sort_type == "Text":
+        try:
+            has_digits = df[sort_col].astype(str).str.contains(r'\d',na=False).any()
+            numeric_values = pd.to_numeric(df[sort_col], errors="coerce")
+            has_numbers = numeric_values.notna().any()
+            if has_digits or has_numbers:
+                st.warning("This column contains numeric values. Sorting may produce unexpected results.(example: '10' may come before '2')")
+                col1,col2 = st.columns(2)
+                with col1:
+                    proceed_yes = st.button("Yes. Proceed anyway.")
+                with col2:
+                    proceed_no = st.button("No. Do not proceed")
+                if proceed_yes:
+                    proceed_sort = True
+                elif proceed_no:
+                    proceed_sort = False
+                else:
+                    st.stop()
+        except Exception as e:
+            st.error("Error analysing column:", e)
+    if proceed_sort:
+        if sort_type == "Alphanumeric":
+            sorted_df = df.sort_values(by=sort_col, ascending=ascending, key=Alphanumeric_key)
+        elif sort_type == "Text":
+            sorted_df = df.sort_values(by=sort_col, ascending=ascending, key=lambda x:x.astype(str).str.lower())
+        elif sort_type == "Number":
+            sorted_df = df.sort_values(by=sort_col, ascending=ascending, key=lambda x:pd.to_numeric(x,errors="coerce"))
+            
+        #Displaying Results
+        st.subheader("Sorted Data")
+        st.dataframe(sorted_df)
 
-    #Downloading files in CSV
-    csv_out = sorted_df.to_csv(index=False)
-    st.download_button("Download results(CSV)", data=csv_out, file_name="Sorted_File.csv", mime="text/csv")
+        #Downloading files in CSV
+        csv_out = sorted_df.to_csv(index=False)
+        st.download_button("Download results(CSV)", data=csv_out, file_name="Sorted_File.csv", mime="text/csv")
 
-    #Downloading results in XLSX
-    excel_buffer = io.BytesIO()
-    sorted_df.to_excel(excel_buffer,index=False, engine="openpyxl")
-    excel_buffer.seek(0)
-    st.download_button("Download results(XLSX)", data = excel_buffer, file_name= "Sorted_File.xlsx", mime= "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        #Downloading results in XLSX
+        excel_buffer = io.BytesIO()
+        sorted_df.to_excel(excel_buffer,index=False, engine="openpyxl")
+        excel_buffer.seek(0)
+        st.download_button("Download results(XLSX)", data = excel_buffer, file_name= "Sorted_File.xlsx", mime= "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
