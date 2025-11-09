@@ -2,9 +2,20 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import io
+import re
 
 st.set_page_config(page_title="Lead Risk Assesment", layout='wide')
 st.title("Data sorting tool")
+
+def Alphanumeric_key(series):
+    def convert_single_value(value):
+        if pd.isna(value) or value =="":
+            return[""]
+        def convert(text):
+            return int(text) if text.isdigit() else text.lower()
+        return [convert(c) for c in re.split('([0-9]+)', str(value))]
+    return series.apply(convert_single_value)
+
 
 #File upload
 uploaded_file = st.file_uploader(
@@ -14,26 +25,39 @@ uploaded_file = st.file_uploader(
 if uploaded_file is not None:
     try:
         if uploaded_file.name.endswith(".csv"):
-            df = pd.read_csv(uploaded_file)
+            df = pd.read_csv(uploaded_file, index_col=False)
         elif uploaded_file.name.endswith((".xls",".xlsx")):
-            df = pd.read_excel(uploaded_file, engine="openpyxl")
-        
+            df = pd.read_excel(uploaded_file, engine="openpyxl", index_col=False)
+        df = df.dropna(how='all')
     except Exception as e:
         st.error(f"Could not read the file. Please upload a valid CSV or excel file.: {e}")
         df = None
-
     col_options = list(df.columns)
-else:
-    print("Upload a file!")
+    sort_col = st.selectbox("Select Column to Sort By", col_options, index = 0)
+    sorted_df = pd.DataFrame()
+        
+    #Sorting
+    sort_direction = st.radio("Sort Direction",["Ascending", "Descending"])
+    ascending = sort_direction == "Ascending"
+    sort_type = st.radio("Sort As",["Alphanumeric", "Text", "Number"])
+    if sort_type == "Alphanumeric":
+        sorted_df = df.sort_values(by=sort_col, ascending=ascending, key=Alphanumeric_key)
+    elif sort_type == "Text":
+        sorted_df = df.sort_values(by=sort_col, ascending=ascending, key=lambda x:x.astype(str).str.lower())
+    elif sort_type == "Number":
+       sorted_df = df.sort_values(by=sort_col, ascending=ascending, key=lambda x:pd.to_numeric(x,errors="coerce"))
+        
+    #Displaying Results
+    st.subheader("Sorted Data")
+    st.dataframe(sorted_df)
 
-#Downloading files in CSV
-csv_out = final_df.to_csv(index=False)
-st.download_button("Download results(CSV)", data=csv_out, file_name="Sorted_File.csv", mime="text/csv")
+    #Downloading files in CSV
+    csv_out = sorted_df.to_csv(index=False)
+    st.download_button("Download results(CSV)", data=csv_out, file_name="Sorted_File.csv", mime="text/csv")
 
-#Downloading results in XLSX
-excel_buffer = io.BytesIO()
-final_df.to_excel(excel_buffer,index=False, engine="openpyxl")
-excel_buffer.seek(0)
-st.download_button("Download results(XLSX)", data = excel_buffer, file_name= "Sorted_File.xlsx", mime= "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-
+    #Downloading results in XLSX
+    excel_buffer = io.BytesIO()
+    sorted_df.to_excel(excel_buffer,index=False, engine="openpyxl")
+    excel_buffer.seek(0)
+    st.download_button("Download results(XLSX)", data = excel_buffer, file_name= "Sorted_File.xlsx", mime= "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
