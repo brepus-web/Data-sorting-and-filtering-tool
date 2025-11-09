@@ -50,17 +50,30 @@ if uploaded_file is not None:
                 st.warning("This column contains numeric values. Sorting may produce unexpected results.(example: '10' may come before '2')")
                 col1,col2 = st.columns(2)
                 with col1:
-                    proceed_yes = st.button("Yes. Proceed anyway.")
+                    proceed_yes = st.button("Proceed anyway.")
                 with col2:
-                    proceed_no = st.button("No. Do not proceed")
+                    proceed_no = st.button( "Do not proceed")
                 if proceed_yes:
                     proceed_sort = True
                 elif proceed_no:
                     proceed_sort = False
+                    st.info("Choose a different sorting method.")
                 else:
                     st.stop()
         except Exception as e:
             st.error("Error analysing column:", e)
+    elif sort_type == "Number":
+        try:
+            numeric_test = pd.to_numeric(df[sort_col], errors='coerce')
+            has_string = numeric_test.isna().any()
+            if has_string:
+                st.error("This column contains string values which cannot be sorted alphabetically.")
+                st.info("Pleas use Alphanumeric or Text sorting method instead.")
+                proceed_sort = False
+                st.stop()
+        except Exception as e:
+            st.error("Error analysing column:", e)
+
     if proceed_sort:
         if sort_type == "Alphanumeric":
             sorted_df = df.sort_values(by=sort_col, ascending=ascending, key=Alphanumeric_key)
