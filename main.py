@@ -133,6 +133,28 @@ if uploaded_file is not None:
             st.dataframe(sorted_df)
             st.write(f"there are {len(sorted_df)} rows.")
 
+            #Data Visualisation
+            st.subheader("Two-column comparision")
+            col1,col2 = st.columns(2)
+            with col1:
+                x_axis = st.selectbox("Select X-axis column.",filtered_df.columns,key='x-axis')
+            with col2:
+                y_axis = st.selectbox("Select Y-axis column.", filtered_df.columns,key='y-axis')
+            if x_axis and y_axis:
+                try:
+                    comparison_data = pd.DataFrame({'X':filtered_df[x_axis],'Y':filtered_df[y_axis]}).dropna()
+                    if len(comparison_data) > 0:
+                        tab1,tab2 = st.tabs(["Line Graph","Scatter Plot"])
+                        with tab1:
+                            st.line_chart(comparison_data.set_index('X')['Y'])
+                            st.caption(f"Line graph:{y_axis} vs {x_axis}")
+                        with tab2:
+                            st.scatter_chart(comparison_data, x='X',y="Y")
+                            st.caption(f"Scatter Plot:{y_axis} vs {x_axis}")
+                    else:
+                        st.warning("No valid data points for comparison")
+                except Exception as e:
+                    st.error(f"Could nor create comparison chart: {e}")
             #Downloading files in CSV
             csv_out = sorted_df.to_csv(index=False)
             st.download_button("Download results(CSV)", data=csv_out, file_name="Sorted_File.csv", mime="text/csv")
@@ -142,4 +164,6 @@ if uploaded_file is not None:
             sorted_df.to_excel(excel_buffer,index=False, engine="openpyxl")
             excel_buffer.seek(0)
             st.download_button("Download results(XLSX)", data = excel_buffer, file_name= "Sorted_File.xlsx", mime= "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+    
 
