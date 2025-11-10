@@ -122,15 +122,16 @@ if uploaded_file is not None:
 
         if sort:
             if sort_type == "Alphanumeric":
-                sorted_df = filtered_df.sort_values(by=sort_column, ascending=ascending, key=Alphanumeric_key)
+                sorted_df = filtered_df.sort_values(by=sort_column, ascending=ascending, key=Alphanumeric_key).reset_index(drop=True)
             elif sort_type == "Text":
-                sorted_df = filtered_df.sort_values(by=sort_column, ascending=ascending, key=lambda x:x.astype(str).str.lower())
+                sorted_df = filtered_df.sort_values(by=sort_column, ascending=ascending, key=lambda x:x.astype(str).str.lower()).reset_index(drop=True)
             elif sort_type == "Number":
-                sorted_df = filtered_df.sort_values(by=sort_column, ascending=ascending, key=lambda x:pd.to_numeric(x,errors="coerce"))
+                sorted_df = filtered_df.sort_values(by=sort_column, ascending=ascending, key=lambda x:pd.to_numeric(x,errors="coerce")).reset_index(drop=True)
                 
             #Displaying Results
             st.subheader("Sorted Data")
             st.dataframe(sorted_df)
+            st.write(f"there are {len(sorted_df)} rows.")
 
             #Downloading files in CSV
             csv_out = sorted_df.to_csv(index=False)
