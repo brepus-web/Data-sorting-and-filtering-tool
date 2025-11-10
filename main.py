@@ -3,7 +3,7 @@ import pandas as pd
 import io
 import re
 
-st.set_page_config(page_title="Lead Risk Assesment", layout='wide')
+st.set_page_config(page_title="Data sorting and filtering tool.", layout='wide')
 st.title("Data sorting and filtering tool")
 
 def Alphanumeric_key(series):
