@@ -131,7 +131,6 @@ if uploaded_file is not None:
             #Displaying Results
             st.subheader("Sorted Data")
             st.dataframe(sorted_df)
-            st.write(f"there are {len(sorted_df)} rows.")
 
             #Data Visualisation
             st.subheader("Two-column comparision")
@@ -144,13 +143,16 @@ if uploaded_file is not None:
                 try:
                     comparison_data = pd.DataFrame({'X':filtered_df[x_axis],'Y':filtered_df[y_axis]}).dropna()
                     if len(comparison_data) > 0:
-                        tab1,tab2 = st.tabs(["Line Graph","Scatter Plot"])
+                        tab1,tab2,tab3 = st.tabs(["Line Graph","Scatter Plot","Bar Chart"])
                         with tab1:
                             st.line_chart(comparison_data.set_index('X')['Y'])
-                            st.caption(f"Line graph:{y_axis} vs {x_axis}")
+                            st.caption(f"Line graph: {y_axis} vs {x_axis}")
                         with tab2:
                             st.scatter_chart(comparison_data, x='X',y="Y")
-                            st.caption(f"Scatter Plot:{y_axis} vs {x_axis}")
+                            st.caption(f"Scatter Plot: {y_axis} vs {x_axis}")
+                        with tab3:
+                            st.bar_chart(comparison_data.set_index('X')['Y'])
+                            st.caption(f"Bar Chart: {y_axis} vs {x_axis}")
                     else:
                         st.warning("No valid data points for comparison")
                 except Exception as e:
