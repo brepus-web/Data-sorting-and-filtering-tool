@@ -88,11 +88,18 @@ if uploaded_file is not None:
                         filtered_df[char_filter_column] = filtered_df[char_filter_column].str.replace(c,'',regex=False)
                     st.success(f"Removed {characters}  from column {char_filter_column}")
                 else:
-                    filtered_df[char_filter_column] = filtered_df[char_filter_column].astype(str)
-                    pattern = f'[^{re.escape(characters)}]'
-                    filtered_df[char_filter_column] = filtered_df[char_filter_column].str.replace(pattern,'',regex=True)
-                    st.success(f"Kept only rows containg characters {characters} in column {char_filter_column}.")
-         #Sorting
+                    choice = st.radio("Options: ",['Keep entire rows with the character','Keep only the character in the row.'])
+                    if choice == 'Keep entire rows with the character':
+                        includes_char = filtered_df[char_filter_column].astype(str).apply(lambda x: any (c in x for c in characters))
+                        filtered_df = filtered_df[includes_char].reset_index(drop=True)
+                        st.success(f"Kept only rows containg characters {characters} in column {char_filter_column}.")
+                    else:
+                        filtered_df[char_filter_column] = filtered_df[char_filter_column].astype(str)
+                        pattern = f'[^{re.escape(characters)}]'
+                        filtered_df[char_filter_column] = filtered_df[char_filter_column].str.replace(pattern,'',regex=True)
+                        st.success(f"Kept only the characters , {characters} in column {char_filter_column}")
+                    
+        #Sorting
         column_options = list(filtered_df.columns)
         sort_column = st.selectbox("Select Column to Sort By", column_options, index = 0)
         sorted_df = pd.DataFrame()
