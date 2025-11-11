@@ -88,11 +88,11 @@ if uploaded_file is not None:
                         filtered_df[char_filter_column] = filtered_df[char_filter_column].str.replace(c,'',regex=False)
                     st.success(f"Removed {characters}  from column {char_filter_column}")
                 else:
-                    includes_char = filtered_df[char_filter_column].astype(str).apply(lambda x: any (c in x for c in characters))
-                    filtered_df = filter_option[includes_char].reset_index(drop=True)
+                    filtered_df[char_filter_column] = filtered_df[char_filter_column].astype(str)
+                    pattern = f'[^{re.escape(characters)}]'
+                    filtered_df[char_filter_column] = filtered_df[char_filter_column].str.replace(pattern,'',regex=True)
                     st.success(f"Kept only rows containg characters {characters} in column {char_filter_column}.")
-
-        #Sorting
+         #Sorting
         column_options = list(filtered_df.columns)
         sort_column = st.selectbox("Select Column to Sort By", column_options, index = 0)
         sorted_df = pd.DataFrame()
