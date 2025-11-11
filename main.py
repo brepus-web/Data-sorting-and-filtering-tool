@@ -75,6 +75,22 @@ if uploaded_file is not None:
                     st.info(f"Removed {removed_rows} rows. Dataset now has {len(filtered_df)} rows.")
             else:
                 st.info("No redundant values found.")
+        #Character Filtering
+        st.subheader("Character Based Filtering")
+        char_filter_column = st.selectbox("Select column for character filtering.", options=filtered_df.columns,key='char_filter')
+        if char_filter_column:
+            filter_type = st.radio("Filter type:", ["Removed characters","Keep only the characters"], key='filter_type')
+            characters = st.text_input("Enter characters to filter")
+            if characters:
+                if filter_type == "Removed characters":
+                    filtered_df[char_filter_column] = filtered_df[char_filter_column].astype(str)
+                    for c in characters:
+                        filtered_df[char_filter_column] = filtered_df[char_filter_column].str.replace(c,'',regex=False)
+                    st.success(f"Removed {characters}  from column {char_filter_column}")
+                else:
+                    includes_char = filtered_df[char_filter_column].astype(str).apply(lambda x: any (c in x for c in characters))
+                    filtered_df = filter_option[includes_char].reset_index(drop=True)
+                    st.success(f"Kept only rows containg characters {characters} in column {char_filter_column}.")
 
         #Sorting
         column_options = list(filtered_df.columns)
@@ -118,7 +134,7 @@ if uploaded_file is not None:
                     sort = False
                     st.stop()
             except Exception as e:
-                st.error("Error analysing column:", e)
+                st.error(f"Error analysing column: {e}")
 
         if sort:
             if sort_type == "Alphanumeric":
