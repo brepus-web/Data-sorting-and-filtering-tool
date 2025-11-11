@@ -79,7 +79,7 @@ if uploaded_file is not None:
         st.subheader("Character Based Filtering")
         char_filter_column = st.selectbox("Select column for character filtering.", options=filtered_df.columns,key='char_filter')
         if char_filter_column:
-            filter_type = st.radio("Filter type:", ["Removed characters","Keep only the characters"], key='filter_type')
+            filter_type = st.radio("Filter type:", ["Removed characters","Keep only the characters","Keep all the rows with the character"], key='filter_type')
             characters = st.text_input("Enter characters to filter")
             if characters:
                 if filter_type == "Removed characters":
@@ -87,17 +87,15 @@ if uploaded_file is not None:
                     for c in characters:
                         filtered_df[char_filter_column] = filtered_df[char_filter_column].str.replace(c,'',regex=False)
                     st.success(f"Removed {characters}  from column {char_filter_column}")
+                elif filter_type == "Keep only the characters":
+                    filtered_df[char_filter_column] = filtered_df[char_filter_column].astype(str)
+                    pattern = f'[^{re.escape(characters)}]'
+                    filtered_df[char_filter_column] = filtered_df[char_filter_column].str.replace(pattern,'',regex=True)
+                    st.success(f"Kept only the characters , {characters} in column {char_filter_column}")
                 else:
-                    choice = st.radio("Options: ",['Keep entire rows with the character','Keep only the character in the row.'])
-                    if choice == 'Keep entire rows with the character':
-                        includes_char = filtered_df[char_filter_column].astype(str).apply(lambda x: any (c in x for c in characters))
-                        filtered_df = filtered_df[includes_char].reset_index(drop=True)
-                        st.success(f"Kept only rows containg characters {characters} in column {char_filter_column}.")
-                    else:
-                        filtered_df[char_filter_column] = filtered_df[char_filter_column].astype(str)
-                        pattern = f'[^{re.escape(characters)}]'
-                        filtered_df[char_filter_column] = filtered_df[char_filter_column].str.replace(pattern,'',regex=True)
-                        st.success(f"Kept only the characters , {characters} in column {char_filter_column}")
+                    includes_char = filtered_df[char_filter_column].astype(str).apply(lambda x: any (c in x for c in characters))
+                    filtered_df = filtered_df[includes_char].reset_index(drop=True)
+                    st.success(f"Kept only rows containg characters {characters} in column {char_filter_column}.")
                     
         #Sorting
         column_options = list(filtered_df.columns)
